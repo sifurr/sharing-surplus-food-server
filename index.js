@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -34,19 +34,26 @@ async function run() {
 
       //middlewares
       app.use(express.json());
-      
+
 
     // foods api
     app.get("/api/v1/foods", async (req, res) => {
       const result = await foodCollection.find().toArray();
       res.send(result);
-    });
+    });    
 
     app.post("/api/v1/user/create-food", async (req, res)=>{
         const food = req.body;
         const result = await foodCollection.insertOne(food);
         res.send(result);
     })
+
+    app.delete("/api/v1/user/cancel-food/:foodId", async (req, res) => {
+        const id = req.params.foodId;
+        const query = { _id: new ObjectId(id) };
+        const result = await foodCollection.deleteOne(query);
+        res.send(result);
+      });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
