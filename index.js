@@ -130,6 +130,14 @@ async function run() {
       res.send(result)
     });   
 
+    app.get("/api/v1/user/food-requests", async (req, res) => {
+      const query = req.query.email;
+      console.log(query);
+      const filter = { requesterEmail: query };
+      const result = await requestCollection.find(filter).toArray();
+      res.send(result);
+    });
+
     app.post("/api/v1/user/food-requests", async (req, res) => {
       const foodRequest = req.body;
       // console.log(foodRequest);
