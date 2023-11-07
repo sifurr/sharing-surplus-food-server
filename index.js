@@ -44,7 +44,8 @@ async function run() {
 
     // foods api
     app.get("/api/v1/foods", async (req, res) => {
-      const result = await foodCollection.find().toArray();
+      const query = { $or: [{"foodStatus": "available"}, {"foodStatus": "pending"}]};
+      const result = await foodCollection.find(query).toArray();
       res.send(result);
     });
 
