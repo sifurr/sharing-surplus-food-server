@@ -50,15 +50,15 @@ async function run() {
 
     app.get("/api/v1/foods/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+      // console.log(id);
       const query = { _id: new ObjectId(id) };
       const result = await foodCollection.findOne(query);
       res.send(result);
-    });  
+    });
 
     app.get("/api/v1/user/foods", async (req, res) => {
       const query = req.query.email;
-      console.log(query);
+      // console.log(query);
       const filter = { donorEmail: query };
       const result = await foodCollection.find(filter).toArray();
       res.send(result);
@@ -77,39 +77,49 @@ async function run() {
         const result = await foodCollection.deleteOne(filter);
         res.status(200).send(result);
       } catch (error) {
-        console.log(error);
+        // console.log(error);
         res.send(error);
       }
     });
 
-    app.patch("/api/v1/user/update-food/:id", async (req, res)=>{
+    app.patch("/api/v1/user/update-food/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = {_id: new ObjectId(id)}
+      const filter = { _id: new ObjectId(id) };
       // const options = {upsert: true}
       const foodInfo = req.body;
       const updateDoc = {
-          $set: {
-              foodName: foodInfo.foodName,
-              foodImage: foodInfo.foodImage,
-              foodQuantity: foodInfo.foodQuantity,
-              pickupLocation: foodInfo.pickupLocation,
-              donorName: foodInfo.donorName,
-              donorImage: foodInfo.donorImage,
-              donorEmail: foodInfo.donorEmail,
-              additionalNote: foodInfo.additionalNote,
-              foodStatus: foodInfo.foodStatus,
-              expireDate: foodInfo.expireDate,
-              updatedDate: foodInfo.updatedDate,
-          }
-      }
+        $set: {
+          foodName: foodInfo.foodName,
+          foodImage: foodInfo.foodImage,
+          foodQuantity: foodInfo.foodQuantity,
+          pickupLocation: foodInfo.pickupLocation,
+          donorName: foodInfo.donorName,
+          donorImage: foodInfo.donorImage,
+          donorEmail: foodInfo.donorEmail,
+          additionalNote: foodInfo.additionalNote,
+          foodStatus: foodInfo.foodStatus,
+          expireDate: foodInfo.expireDate,
+          updatedDate: foodInfo.updatedDate,
+        },
+      };
       const result = await foodCollection.updateOne(filter, updateDoc);
       res.send(result);
-  })
+    });
 
     // food request api
+
+    app.get("/api/v1/user/food-requests/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { foodId: id };
+      const result = await requestCollection.find(query).toArray();
+      res.send(result)
+    });
+   
+
     app.post("/api/v1/user/food-requests", async (req, res) => {
       const foodRequest = req.body;
-      console.log(foodRequest);
+      // console.log(foodRequest);
       const result = await requestCollection.insertOne(foodRequest);
       res.send(result);
     });
