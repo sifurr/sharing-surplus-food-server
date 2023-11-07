@@ -106,16 +106,28 @@ async function run() {
       res.send(result);
     });
 
-    // food request api
+    app.patch("/api/v1/user/update-food-status/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };      
+      const foodInfo = req.body;
+      const updateDoc = {
+        $set: {
+          foodStatus: foodInfo.foodStatus
+        },
+      };
+      const result = await foodCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
 
+
+    // food request api
     app.get("/api/v1/user/food-requests/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+      // console.log(id);
       const query = { foodId: id };
       const result = await requestCollection.find(query).toArray();
       res.send(result)
-    });
-   
+    });   
 
     app.post("/api/v1/user/food-requests", async (req, res) => {
       const foodRequest = req.body;
@@ -123,6 +135,10 @@ async function run() {
       const result = await requestCollection.insertOne(foodRequest);
       res.send(result);
     });
+
+    app.patch("/api/v1/user/update-requested-food-status/:id", async (req, res)=>{
+      const id = req.params.id;
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
