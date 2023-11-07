@@ -13,14 +13,14 @@ app.use(cookieParser());
 
 // mongodb
 
-// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ddl1jzo.mongodb.net/surplus-food-sharing?retryWrites=true&w=majority`;
-const uri = "mongodb://localhost:27017";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ddl1jzo.mongodb.net/surplus-food-sharing?retryWrites=true&w=majority`;
+// const uri = "mongodb://localhost:27017";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
-    strict: true,
+    strict: false,
     deprecationErrors: true,
   },
 });
@@ -31,22 +31,54 @@ async function run() {
     await client.connect();
 
     // database and collections
-    // const foodCollection = client
-    // .db("surplus-food-sharing")
-    // .collection("foods");
-
     const foodCollection = client
-      .db("surplus-food-sharing-localdb")
+      .db("surplus-food-sharing")
       .collection("foods");
+
     const requestCollection = client
-      .db("surplus-food-sharing-localdb")
+      .db("surplus-food-sharing")
       .collection("requests");
+
+    // const foodCollection = client
+    // .db("surplus-food-sharing-localdb")
+    // .collection("foods");
+    // const requestCollection = client
+    // .db("surplus-food-sharing-localdb")
+    // .collection("requests");
 
     // foods api
     app.get("/api/v1/foods", async (req, res) => {
-      const query = { $or: [{"foodStatus": "available"}, {"foodStatus": "pending"}]};
+      const query = {
+        $or: [{ foodStatus: "available" }, { foodStatus: "pending" }],
+      };
       const result = await foodCollection.find(query).toArray();
       res.send(result);
+    });
+
+    app.get("/api/v1/foods-by-query", async (req, res) => {     
+      const query = req.query.ser;
+      console.log(query);
+      // const result = await foodCollection.find({foodName : {$regex: query}}).toArray()
+      const result = await foodCollection.aggregate([
+        { $addFields: { result: { $regexMatch: { input: "$foodName", regex: /line/, options: "i"  } } } }
+     ]).toArray()
+
+      // const result = await foodCollection.aggregate(
+      //   [
+      //     {
+      //       $search: {
+      //         index: "myfoods",
+      //         text: {
+      //           query: query,
+      //           path: {
+      //             wildcard: "*"
+      //           }
+      //         }
+      //       }
+      //     }
+      //   ]
+      // ).toArray()
+      res.send(result)
     });
 
     app.get("/api/v1/foods/:id", async (req, res) => {
@@ -109,17 +141,17 @@ async function run() {
 
     app.patch("/api/v1/user/update-food-status/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };      
+      // console.log("from food status patch: ", id);
+      const filter = { _id: new ObjectId(id) };
       const foodInfo = req.body;
       const updateDoc = {
         $set: {
-          foodStatus: foodInfo.foodStatus
+          foodStatus: foodInfo.foodStatus,
         },
       };
       const result = await foodCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
-
 
     // food request api
     app.get("/api/v1/user/food-requests/:id", async (req, res) => {
@@ -127,12 +159,12 @@ async function run() {
       // console.log(id);
       const query = { foodId: id };
       const result = await requestCollection.find(query).toArray();
-      res.send(result)
-    });   
+      res.send(result);
+    });
 
     app.get("/api/v1/user/food-requests", async (req, res) => {
       const query = req.query.email;
-      console.log(query);
+      // console.log(query);
       const filter = { requesterEmail: query };
       const result = await requestCollection.find(filter).toArray();
       res.send(result);
@@ -145,9 +177,17 @@ async function run() {
       res.send(result);
     });
 
-    app.patch("/api/v1/user/update-requested-food-status/:id", async (req, res)=>{
-      const id = req.params.id;
-    })
+    app.delete("/api/v1/user/cancel-food-request/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const result = await requestCollection.deleteOne(filter);
+        res.status(200).send(result);
+      } catch (error) {
+        // console.log(error);
+        res.send(error);
+      }
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
