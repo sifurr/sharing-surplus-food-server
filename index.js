@@ -10,7 +10,7 @@ const port = process.env.PORT || 5000;
 //middlewares
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
+    origin: ["https://food-sharing-c4714.web.app", "https://food-sharing-c4714.firebaseapp.com"],
     credentials: true,
   })
 );
