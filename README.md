@@ -1,1 +1,0 @@
-https://b8a11-server-side-sifurr-2fjwuingv-saifurs-projects.vercel.app
