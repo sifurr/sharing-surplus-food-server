@@ -60,6 +60,14 @@ async function run() {
       .db("surplus-food-sharing")
       .collection("requests");
 
+    const teamCollection = client
+      .db("surplus-food-sharing")
+      .collection("team");
+
+    const galleryCollection = client
+      .db("surplus-food-sharing")
+      .collection("gallery");
+
     // const foodCollection = client
     // .db("surplus-food-sharing-localdb")
     // .collection("foods");
@@ -250,6 +258,18 @@ async function run() {
         // console.log(error);
         res.send(error);
       }
+    });
+
+     // team api
+     app.get("/api/v1/team", async (req, res) => {      
+      const result = await teamCollection.find().toArray();
+      res.send(result);
+    });
+
+    // gallery api
+     app.get("/api/v1/gallery", async (req, res) => {           
+      const result = await galleryCollection.find().toArray();
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
