@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const app = express();
 const port = process.env.PORT || 5000;
@@ -10,7 +10,10 @@ const port = process.env.PORT || 5000;
 //middlewares
 app.use(
   cors({
-    origin: ["https://food-sharing-c4714.web.app", "https://food-sharing-c4714.firebaseapp.com"],
+    origin: [
+      "https://community-food-sharing-16b93.web.app",
+      "https://community-food-sharing-16b93.firebaseapp.com",
+    ],
     credentials: true,
   })
 );
@@ -60,9 +63,7 @@ async function run() {
       .db("surplus-food-sharing")
       .collection("requests");
 
-    const teamCollection = client
-      .db("surplus-food-sharing")
-      .collection("team");
+    const teamCollection = client.db("surplus-food-sharing").collection("team");
 
     const galleryCollection = client
       .db("surplus-food-sharing")
@@ -75,23 +76,24 @@ async function run() {
     // .db("surplus-food-sharing-localdb")
     // .collection("requests");
 
-
     // auth api
-        // auth routes
-        app.post("/api/v1/auth/access-token", (req, res) => {
-          // creating access token and sent to the client
-          // {email: "john@doe.com"}
-          const user = req.body;
-          const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
-          // console.log(token);
-          res
-            .cookie("token", token, {
-              httpOnly: true,
-              secure: false, 
-              // sameSite: "none",
-            })
-            .send({ success: true });
-        });
+    // auth routes
+    app.post("/api/v1/auth/access-token", (req, res) => {
+      // creating access token and sent to the client
+      // {email: "john@doe.com"}
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+      });
+      // console.log(token);
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: false,
+          // sameSite: "none",
+        })
+        .send({ success: true });
+    });
 
     // foods api
     app.get("/api/v1/foods", async (req, res) => {
@@ -153,7 +155,7 @@ async function run() {
       const tokenEmailFromVerifyToken = req.user.email;
       // console.log(query);
       if (queryEmail !== tokenEmailFromVerifyToken) {
-        return res.status(403).send({message: "403, Access forbidden"});
+        return res.status(403).send({ message: "403, Access forbidden" });
       }
       const query = { donorEmail: queryEmail };
       const result = await foodCollection.find(query).toArray();
@@ -172,8 +174,7 @@ async function run() {
         const filter = { _id: new ObjectId(id) };
         const result = await foodCollection.deleteOne(filter);
         res.status(200).send(result);
-      } 
-      catch (error) {
+      } catch (error) {
         // console.log(error);
         res.send(error);
       }
@@ -227,13 +228,13 @@ async function run() {
     });
 
     app.get("/api/v1/user/food-requests", verifyToken, async (req, res) => {
-      // const query = req.query.email;      
+      // const query = req.query.email;
       // console.log(query);
       const queryEmail = req.query.email;
       const tokenEmailFromVerifyToken = req.user.email;
       // console.log(query);
       if (queryEmail !== tokenEmailFromVerifyToken) {
-        return res.status(403).send({message: "403, Access forbidden"});
+        return res.status(403).send({ message: "403, Access forbidden" });
       }
 
       const query = { requesterEmail: queryEmail };
@@ -260,14 +261,14 @@ async function run() {
       }
     });
 
-     // team api
-     app.get("/api/v1/team", async (req, res) => {      
+    // team api
+    app.get("/api/v1/team", async (req, res) => {
       const result = await teamCollection.find().toArray();
       res.send(result);
     });
 
     // gallery api
-     app.get("/api/v1/gallery", async (req, res) => {           
+    app.get("/api/v1/gallery", async (req, res) => {
       const result = await galleryCollection.find().toArray();
       res.send(result);
     });
@@ -283,7 +284,6 @@ async function run() {
   }
 }
 run().catch(console.dir);
-
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
